@@ -9,5 +9,5 @@ reader can see why the code is shaped the way it is.
   Deciders, then: Context, Decision, Alternatives considered, Consequences.
 - An accepted ADR isn't rewritten. To change a decision, write a new ADR that
   supersedes it and update the old one's Status.
-- If this repo adds a `cerebe.yaml`, set `docs.adrDir: docs/adr` there so
-  Cerebe's tools write ADRs to this folder.
+- `docs/ADR/` is the folder Cerebe's tools use by default (`docs.adrDir` in
+  `cerebe.yaml`), so they find these records without configuration.

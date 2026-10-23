@@ -10,4 +10,4 @@ that implements one cites it.
   Context, Goals, Non-goals, Requirements, Success metrics, Open questions.
 - Number requirements (R1, R2, …) so changes and ADRs can cite them.
 - Architecture decisions a PRD leads to are recorded in
-  [`../adr/`](../adr/README.md), and the PRD links them.
+  [`../ADR/`](../ADR/README.md), and the PRD links them.

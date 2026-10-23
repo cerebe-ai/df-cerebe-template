@@ -19,7 +19,7 @@ workspace's `package.json`, each with a `type-check` script. The hooks in
 |---|---|
 | Coding standards (before writing code) | [`docs/engineering/coding-standards.md`](docs/engineering/coding-standards.md) |
 | Product requirements (PRDs) | [`docs/prds/`](docs/prds/README.md) |
-| Architecture decisions (ADRs) | [`docs/adr/`](docs/adr/README.md) |
+| Architecture decisions (ADRs) | [`docs/ADR/`](docs/ADR/README.md) |
 | Setup walkthrough, opt-in hosted PR gate | [`docs/getting-started.md`](docs/getting-started.md) |
 | Open decisions, verification log | [`docs/notes.md`](docs/notes.md) |
 | Critic gate configuration | [`.agent-review/README.md`](.agent-review/README.md) |

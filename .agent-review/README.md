@@ -20,6 +20,7 @@ Comments aren't allowed in JSON (the file is validated against
 | `profiles.local.auth` | Maps each critic to its auth mode. `chatgpt` = use the Codex subscription login (flat-rate), not a per-token API key. |
 | `aggregation.blockingSeverities` | Which finding severities block a push (`blocker`, `high`). `medium`/`low` are advisory. |
 | `git.artifactDir` / `artifactScope` | Per-SHA review artifacts land in `.git/agent-reviews/<sha>.md` (+ `.json`). `git-common-dir` keeps them correct across worktrees. |
+| `context.guidanceFiles` | The repo rules every local critic judges a commit against: root `AGENTS.md` and [`docs/engineering/coding-standards.md`](../docs/engineering/coding-standards.md). A commit that edits one of them, or anything in `.agent-review/`, is reviewed against the previous commit's versions. |
 
 ## What you must do before the gate actually runs
 

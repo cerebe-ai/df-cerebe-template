@@ -52,7 +52,7 @@ df-cerebe-template/
 ├── .agent-review/  Dark Factory critic config (gate on every commit)
 ├── .husky/         post-commit (review) + pre-push (gate) hooks
 ├── scripts/        init script + optional docker-build evidence shim
-└── docs/           getting-started, notes (open decisions)
+└── docs/           getting-started, notes, coding standards, PRDs, ADRs
 ```
 
 ## The three ideas this template commits to

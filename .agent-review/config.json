@@ -50,7 +50,7 @@
     "postCommitMode": "async"
   },
   "context": {
-    "guidanceFiles": ["CLAUDE.md"],
+    "guidanceFiles": ["AGENTS.md", "docs/engineering/coding-standards.md"],
     "promptFragments": [".agent-review/prompts/local-critic.md"],
     "maxChangedFileBytes": 200000,
     "includeFullChangedFiles": true

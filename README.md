@@ -1,7 +1,7 @@
 # df-cerebe-template
 
 > Internal dashboard template with AI chat. **Bun + Hono + LangGraph.js** backend,
-> **Vite + Svelte** frontend, shared TypeScript types, gated by **Cerebe Factory**.
+> **Vite + Svelte** frontend, shared TypeScript types, with the **Cerebe Factory** gate wired in.
 > Native dev in seconds — Docker/Kubernetes exist for deployment only and are
 > never in your way while building.
 
@@ -67,11 +67,13 @@ df-cerebe-template/
 2. **Native dev is sacred.** `bun install` → `bun run dev` → app on screen. Docker
    and Kubernetes are quarantined in `deploy/` and are an opt-in *deployment*
    step, never a *development* requirement.
-3. **Gated from commit one.** The Cerebe Factory gate is committed in
+3. **Gate wired from commit one.** The Cerebe Factory gate is committed in
    [`cerebe/`](cerebe/) and [`cerebe.yaml`](cerebe.yaml); `cerebe init` wires its
-   post-commit (review) and pre-push (gate) hooks. Local critics are opt-in
-   (`cerebe model add <vendor>`), and the hosted Cerebe Factory App reviews pull
-   requests. See [`docs/getting-started.md`](docs/getting-started.md) Step 6.
+   post-commit (review) and pre-push (gate) hooks. Nothing is reviewed until you
+   turn review on: enable a local critic (`cerebe model add <vendor>`), and to gate
+   pull requests, install the hosted Cerebe Factory App and require its
+   `cerebe/critic` check. See [`docs/getting-started.md`](docs/getting-started.md)
+   Step 6 and its appendix.
 
 ## Deploying (later, optional)
 

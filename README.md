@@ -1,7 +1,7 @@
 # df-cerebe-template
 
 > Internal dashboard template with AI chat. **Bun + Hono + LangGraph.js** backend,
-> **Vite + Svelte** frontend, shared TypeScript types, gated by **Dark Factory**.
+> **Vite + Svelte** frontend, shared TypeScript types, gated by **Cerebe Factory**.
 > Native dev in seconds — Docker/Kubernetes exist for deployment only and are
 > never in your way while building.
 
@@ -17,12 +17,17 @@ pinned but not installed** — your `bun install` brings them in. See
 
 ```bash
 # 1. Install Bun once: https://bun.sh
-bun install                 # installs all workspaces + the Dark Factory CLI
+bun install                 # installs all workspaces
 
-# 2. Configure
+# 2. Wire the Cerebe Factory gate: install the cerebe CLI once per machine,
+#    then run `cerebe init` in each fresh clone (cerebe/ is committed)
+curl -fsSL https://raw.githubusercontent.com/cerebe-ai/cerebe/main/install.sh | sh
+cerebe init                 # installs the post-commit + pre-push git hooks
+
+# 3. Configure
 cp .env.example .env        # set CEREBE_API_KEY (Clerk keys optional)
 
-# 3. Run
+# 4. Run
 bun run dev                 # backend (:8787) + frontend (:5173), both hot-reload
 ```
 
@@ -49,8 +54,8 @@ df-cerebe-template/
 ├── frontend/       Vite + Svelte SPA          → dev: vite (native)
 ├── shared/         TypeScript types imported by BOTH sides
 ├── deploy/         Docker + k8s — DEPLOY ONLY, dev never touches it
-├── .agent-review/  Dark Factory critic config (gate on every commit)
-├── .husky/         post-commit (review) + pre-push (gate) hooks
+├── cerebe/         Cerebe Factory gate config; cerebe init wires the hooks
+├── cerebe.yaml     Cerebe Factory team config (deny list, locked keys)
 ├── scripts/        init script + optional docker-build evidence shim
 └── docs/           getting-started, notes, coding standards, PRDs, ADRs
 ```
@@ -62,9 +67,11 @@ df-cerebe-template/
 2. **Native dev is sacred.** `bun install` → `bun run dev` → app on screen. Docker
    and Kubernetes are quarantined in `deploy/` and are an opt-in *deployment*
    step, never a *development* requirement.
-3. **Gated from commit one.** Dark Factory's local critic quorum reviews every
-   commit and gates every push — wired here via [`.agent-review/`](.agent-review/)
-   and [`.husky/`](.husky/). See [`docs/getting-started.md`](docs/getting-started.md) Step 6.
+3. **Gated from commit one.** The Cerebe Factory gate is committed in
+   [`cerebe/`](cerebe/) and [`cerebe.yaml`](cerebe.yaml); `cerebe init` wires its
+   post-commit (review) and pre-push (gate) hooks. Local critics are opt-in
+   (`cerebe model add <vendor>`), and the hosted Cerebe Factory App reviews pull
+   requests. See [`docs/getting-started.md`](docs/getting-started.md) Step 6.
 
 ## Deploying (later, optional)
 

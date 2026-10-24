@@ -25,7 +25,8 @@
 #
 # What it does NOT do: install deps, write secrets, or rename any files/dirs (the
 # slug only ever appears in file CONTENTS, never in a path). After it runs:
-# `bun install`, then `cp .env.example .env`. See docs/getting-started.md.
+# `bun install`, `cerebe init`, then `cp .env.example .env`. See
+# docs/getting-started.md.
 #
 # Requires: bash, perl, git (perl ships on macOS + Linux; on Windows use WSL2).
 # ─────────────────────────────────────────────────────────────────────────────
@@ -176,9 +177,10 @@ fi
 echo "Done — rewrote $changed file(s)."
 echo
 echo "Next:"
-echo "  1. bun install            # installs deps + activates the husky gate"
-echo "  2. cp .env.example .env   # then fill in keys"
-echo "  3. bun run dev            # http://localhost:5173"
+echo "  1. bun install            # installs deps"
+echo "  2. cerebe init            # wires the Cerebe Factory git hooks (CLI install: docs/getting-started.md)"
+echo "  3. cp .env.example .env   # then fill in keys"
+echo "  4. bun run dev            # http://localhost:5173"
 echo
 echo "Heads-up: docs/ may still contain template-instantiation references"
 echo "(e.g. the 'Use this template' command). Skim docs/getting-started.md and"

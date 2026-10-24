@@ -9,9 +9,10 @@ SPA, and `shared/` the TypeScript types both import. Quickstart and layout:
 
 Bun is the runtime, package manager and script runner: use `bun` and `bunx`,
 not `npm`, `npx` or `node`. Scripts live in the root
-[`package.json`](package.json) (dev loop, gate, deploy) and in each
-workspace's `package.json`, each with a `type-check` script. The hooks in
-[`.husky/`](.husky/) run the critic gate on every commit and push.
+[`package.json`](package.json) (dev loop, deploy) and in each workspace's
+`package.json`, each with a `type-check` script. In a fresh clone, run
+`cerebe init` once: it installs the git hooks that run the critic gate on every
+commit and push.
 
 ## Where things live
 
@@ -22,7 +23,7 @@ workspace's `package.json`, each with a `type-check` script. The hooks in
 | Architecture decisions (ADRs) | [`docs/ADR/`](docs/ADR/README.md) |
 | Setup walkthrough, opt-in hosted PR gate | [`docs/getting-started.md`](docs/getting-started.md) |
 | Open decisions, verification log | [`docs/notes.md`](docs/notes.md) |
-| Critic gate configuration | [`.agent-review/README.md`](.agent-review/README.md) |
+| Critic gate configuration | [`cerebe/config.json`](cerebe/config.json), [`cerebe.yaml`](cerebe.yaml) (explained in getting-started Step 6) |
 | Deployment (Docker, Kubernetes) | [`deploy/README.md`](deploy/README.md) |
 | Area rules (nested `AGENTS.md`), skills (`.claude/skills/`) | None yet |
 
@@ -31,155 +32,57 @@ workspace's `package.json`, each with a `type-check` script. The hooks in
 - **Dev never needs Docker or Kubernetes.** `bun install` then `bun run dev`
   is the whole loop. Container and cluster files stay in `deploy/`, out of the
   dev scripts and the dev path. No check enforces this; review holds it.
-- **The gate stays intact.** Don't disable, bypass or weaken the `.husky/`
-  hooks or `.agent-review/config.json` to get a commit through. Fix the
-  critic's findings (`.git/agent-reviews/<sha>.md`) in a new commit; never
-  amend. Bypass a push only in a genuine emergency, with
-  `AGENT_REVIEW_BYPASS="<reason>"`. `.husky/pre-push` (`df gate-push`)
-  enforces the gate and logs every bypass to `.git/agent-reviews/_runs.ndjson`;
-  review holds the rest.
+- **The gate stays intact.** Don't disable, bypass or weaken the git hooks
+  `cerebe init` installs, `cerebe/config.json` or `cerebe.yaml` to get a commit
+  through. Fix the critic's findings (`cerebe status`, `cerebe show`) in a new
+  commit; never amend. Bypass a push only in a genuine emergency, with
+  `CEREBE_BYPASS="<reason>"`, which is audited. The pre-push hook
+  (`cerebe gate-push`) enforces the gate; review holds the rest.
 - **Lockfile.** A project created from this template commits `bun.lock` after
   its first `bun install`. The template repository itself stays uninstalled
   and commits no lockfile ([`docs/notes.md` §1](docs/notes.md#1-dependency-versions-are-placeholders-verify-before-first-install)).
   Review holds this.
 
-<!-- cerebe:pack-digest:v1 sha256=eb00e3761e0e78df6a29deb8ea1159e721e5c928266469a5dea25d4f9e08a1f6 -->
-# SOTA-first doctrine
+<!-- cerebe:pack-digest:v1 sha256=4cc3f38a5b2ce6608ec15a4caa7a5d584768fedfdbe72adb00953b244f548093 -->
+# Working with Cerebe's review
 
-Push forward to the current state of the art. Choose the approach a well-run
-team would choose today, not the one that merely happens to already be in the
-tree.
+Cerebe reviews your changes and reports findings. Each finding names a file, the evidence, the impact and the fix it requires.
 
-## Mandate
-
-- Prefer the current best-practice API, pattern, or library over a legacy
-  default. Match an older pattern already in the codebase only when consistency
-  is the actual point; otherwise upgrade it in scope.
-- Rename or replace legacy paths and remove dead code you touch — do not leave a
-  second way to do the same thing sitting behind the new one.
-- No backward-compatibility shims unless explicitly requested. The one exception
-  is a published or otherwise public surface, where breaking changes are
-  version-gated rather than free.
-
-## Legacy-default tripwires
-
-Stop and justify when you notice yourself:
-
-- Reaching for a deprecated function, flag, or config because it was the first
-  hit, not because it is the right one.
-- Copying an existing pattern that is itself out of date ("it's already like
-  this here").
-- Leaving a "temporary" shortcut, TODO, or cast that hides a real type or
-  contract.
-- Duplicating logic that already has a canonical home instead of calling it.
-
-If you choose a legacy default deliberately, name the reason in one line — a
-real constraint, not habit. If you cannot name the reason, that is the signal to
-pick the current approach instead.
+- Locally, when review is on: `cerebe status` shows the verdict and findings for your latest commit, and `cerebe show` prints the full review. The pre-push hook runs `cerebe gate-push`, which blocks a push while a blocking finding is unresolved.
+- On a pull request: findings are annotations on the `cerebe/critic` check. `cerebe review-status --pr <number>` prints the result as data.
+- Fix each finding whose evidence holds. When the evidence does not hold, say why in the pull request, citing the code.
+- Commit and push again; the new commit is reviewed.
 
 ---
 
-# Iteration ceiling — restructure, don't thrash
+# When review rounds stop converging
 
-Fixing review findings has a hard iteration ceiling. Respect it.
+A round is one review and the fixes that answer it.
 
-## The N=2 ceiling
-
-- After 2 rounds of fixes, if a third round of findings on the same area is
-  appearing, STOP. Do not reach for a third patch first.
-- "Same finding-class" does not require identical text. ANY new finding
-  introduced by a fix is a thrash signal — regardless of:
-  - severity dropping (high to medium is not convergence),
-  - the finding moving to a different file (relocation is not progress), or
-  - reviewers agreeing across vendors (consensus is real signal, but the right
-    response is to restructure, not to patch again).
-
-## Mandatory response at the 2nd consecutive round of fix-introduced findings
-
-1. Stop patching.
-2. Get an independent read — call the advisor, or the equivalent
-   independent-reviewer capability in your tool.
-3. Name the structural cause: the surface that keeps generating findings.
-4. Restructure that surface — DRY it, delete it, or redesign it — BEFORE any
-   further fix attempt.
-
-A fix that eliminates the finding-generating structure ends the loop; a fix that
-merely reshapes the same surface restarts it. When in doubt, restructure the
-thing being iterated on rather than the latest symptom.
+- Budget three rounds by default; use the repository's number if its guidance sets one.
+- After each round, compare the new findings with the last. You are converging when there are fewer and no new kinds. A lower severity, or the same finding moved to another file, is not progress.
+- When new kinds of finding keep appearing in the same part of the change, stop fixing them one by one. Restructure that part: simplify it, remove it, or split it into its own change.
+- Ask the person you work for only when a mergeable change needs a decision that is theirs.
 
 ---
 
-# Parking-lot protocol — pre-existing blockers
+# When a gate fails because of the base branch
 
-Not every failure you hit is yours to fix in this change. Separate the two
-cleanly instead of chasing an inherited failure down a rabbit hole.
+Before you fix a failing gate, find out whose failure it is.
 
-## Triage first
-
-When a gate fails, decide whether the failure is caused by your diff or
-inherited from the base branch:
-
-- Reproduce against a pristine checkout of the base branch (a disposable
-  worktree), with the same build and the same failing gate.
-- If it fails identically there, it is pre-existing — not introduced by your
-  change.
-
-## If it is pre-existing — park it, don't absorb it
-
-1. File a tracking issue: the failing command, the error excerpt, and the
-   file or workflow that is broken.
-2. Note the pre-existing failure (with its issue link) in your change
-   description, so a reviewer sees it is known and tracked.
-3. Proceed with a structured, cited reason — never a silent skip.
-
-## Budget
-
-If you have spent more than about 30 minutes trying to fix something that turns
-out to be pre-existing, that is the signal to park-and-track it instead of
-continuing.
-
-## Hard stops — do NOT park these
-
-- The failure IS in your diff. Fix it.
-- The fix is trivial and adjacent to your scope (a few lines, no new test
-  infrastructure). Fix it inline.
-
-Park to stay focused, not to dodge real findings. A finding your change caused is
-never a parking-lot candidate.
+- Run `cerebe verify --triage-base <base-ref> --route <id>`, or `cerebe verify --triage-base <base-ref> --gate "<command>"` for a gate that is not a route. It runs the gate in your tree and at the base, and prints one verdict.
+- `in-diff` or `inconclusive`: treat it as yours and fix it.
+- `pre-existing`: leave it out of this change unless the fix is a few adjacent lines. File an issue naming the gate and cite it in your pull request.
+- If the push gate blocks only on that failure, push with the reason: `CEREBE_BYPASS="<gate> fails at <base-ref>; tracked at #<issue>" git push`. Never bypass a failure your change caused.
 
 ---
 
-# Decision protocol
+# Producing the evidence the gate reads
 
-When you hit a decision that is not already settled, follow this order instead
-of guessing or stalling.
+This applies when the repository defines verification routes: commands that must pass when a change touches certain paths.
 
-## 1. Look it up first
-
-Check whether the decision is already made — in the decision ledger, in the
-change's stated objectives, in the repo's contributor docs, or in an existing
-ADR. A settled decision is not yours to re-open; apply it and move on.
-
-## 2. Decide it yourself when it is reversible AND in your authority
-
-If the decision is cheap to reverse and within the scope you were handed, make
-it, act, and record it — for example with `cyclone decisions record` — so the
-next agent inherits the rationale rather than re-deriving it. A recorded
-reversible decision keeps momentum without losing the trail.
-
-## 3. Escalate — with a timeout — when it is irreversible OR out of authority
-
-If the decision is expensive to undo (a public contract, a security posture, a
-data migration) or outside your scope, escalate with a concrete proposal and a
-decision deadline. Do not spin idle waiting for an answer.
-
-## 4. If the escalation times out: safe default or park
-
-When no answer arrives in time, either take the reversible safe default (and
-record it, per step 2) or park the work behind a tracking issue (per the
-parking-lot protocol). Never ship an irreversible choice on an unanswered
-escalation.
-
-Rule of thumb: reversible-and-yours means decide and record; irreversible-or-
-not-yours means escalate; no answer in time means safe default or park.
+- Before you push, run `cerebe verify`. It runs the routes your commit triggers and records the result for that exact commit. `cerebe verify --route <id>` runs one route.
+- `cerebe gate-push` blocks a push when a triggered route has no passing evidence. Evidence is bound to the diff, so run `cerebe verify` again after you change the commit.
+- A failing route is a real failure: fix the cause. Never write or edit evidence by hand.
+- `cerebe gates` runs the quality gates and the triggered routes with no model call.
 <!-- /cerebe:pack-digest:v1 -->

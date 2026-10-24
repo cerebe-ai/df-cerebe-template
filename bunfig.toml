@@ -4,8 +4,9 @@
 # `--env-file ../.env` to point at the root .env. No dotenv needed.
 
 [install]
-# Use exact versions in lockfile for reproducible installs (matches the
-# Dark Factory "two paths converge on the same pin" requirement).
+# Reproducible installs come from the committed lockfile, which records exact
+# resolved versions. `exact` only decides whether `bun add` writes an exact
+# version (true) or a caret range (false) into package.json.
 exact = false
 
 # NOTE(verify): if you later run the backend under Node instead of Bun

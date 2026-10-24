@@ -1,8 +1,9 @@
 # Coding standards
 
 Conventions for code in this repo that the tooling doesn't enforce. Read this
-before writing code. The local critic reviews every commit against it (it is
-listed in `.agent-review/config.json` under `context.guidanceFiles`).
+before writing code. It is listed in `cerebe/config.json` under
+`context.guidanceFiles`, so a local critic, once you enable one with
+`cerebe model add <id>`, reviews each commit against it.
 
 What the tooling already checks is not repeated here: strict TypeScript from
 [`tsconfig.base.json`](../../tsconfig.base.json), run by each workspace's

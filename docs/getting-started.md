@@ -1,7 +1,7 @@
 # Get started — run DF Cerebe locally in minutes, deploy when you choose
 
 > **Native dev first. Infrastructure last, and only if you want it.**
-> TypeScript on both ends, one agent runtime, gated by Dark Factory from the
+> TypeScript on both ends, one agent runtime, gated by Cerebe Factory from the
 > first commit. No Kubernetes, no Docker, no cluster to bring up before you see
 > your dashboard on screen.
 
@@ -10,10 +10,11 @@ dashboard. The core loop is **a couple of minutes** — most of it is `bun insta
 Deployment (Docker + k8s) is a separate, optional path at the end.
 
 > **Template status:** the backend (Hono + LangGraph.js agent), the streaming
-> chat frontend, the shared types, and the Dark Factory gate are **implemented
+> chat frontend, the shared types, and the Cerebe Factory gate are **implemented
 > and verified** — `bun install`, the dev loop, type-checks, the frontend build,
-> and the agent's call to Cerebe were all exercised end to end. Auth (Clerk) is
-> also **wired and verified** — graceful-optional, off until you add Clerk keys.
+> the agent's call to Cerebe, and `cerebe init` + `cerebe doctor` were all
+> exercised end to end. Auth (Clerk) is also **wired and verified** —
+> graceful-optional, off until you add Clerk keys.
 > What's left for you: add your Cerebe key (Step 3); add Clerk keys if/when you
 > want auth (Step 4). Dependencies are **declared (pinned) but not installed** in
 > the template itself — your `bun install` brings them in. Open decisions are
@@ -28,8 +29,8 @@ By the end you have:
 - It **running natively** at `http://localhost:5173` — no containers involved
 - A **first agent turn** streamed from the backend to the chat surface
 - **Auth via Clerk** and **secrets via Doppler** (both optional to start)
-- A **first commit reviewed** by the Dark Factory local critic quorum, with an
-  evidence-bound artifact at `.git/agent-reviews/<sha>.md`
+- A **first commit gated** by the Cerebe Factory hooks, reviewed by your local
+  critics once you enable one (`cerebe show` prints the per-commit artifact)
 - A **fully-working but isolated deploy path** (Docker + Kubernetes) you can
   reach for later — and never have to think about until then
 
@@ -44,7 +45,7 @@ You are helping me stand up DF Cerebe, an internal dashboard built on:
   Backend  — Bun + Hono + LangGraph.js (TypeScript agent runtime)
   Frontend — Vite + Svelte SPA (TypeScript), Clerk auth
   Shared   — a TypeScript types package imported by both sides
-  Gate     — Dark Factory local critic quorum (@momentiq/dark-factory-cli)
+  Gate     — Cerebe Factory (the cerebe CLI; config committed in cerebe/)
   Deploy   — Docker + Kubernetes, isolated in deploy/, OPTIONAL
 
 Native local dev must never require Docker or Kubernetes. Walk me through the
@@ -52,21 +53,21 @@ steps in docs/getting-started.md interactively: show the command, ask before
 anything destructive, run it, verify the expected outcome, then continue. If
 something fails, diagnose and propose a fix.
 
-1. Verify prereqs: bun (>=1.1), git. On Windows, confirm I'm running in WSL2 with
-   the repo on the Linux filesystem (~/..., not /mnt/c). docker + kubectl are
-   deploy-path only. Give the install one-liner for anything missing on my OS.
-2. Authenticate at least one Dark Factory critic subscription (Cursor and/or
-   Codex — e.g. `codex login`). Without it the pre-push gate (step 7) fails
-   closed, so do this early.
-3. (Optional) Rename the template to my product: run
+1. Verify prereqs: bun (>=1.1), git, and the cerebe CLI. On Windows, confirm I'm
+   running in WSL2 with the repo on the Linux filesystem (~/..., not /mnt/c).
+   docker + kubectl are deploy-path only. Give the install one-liner for anything
+   missing on my OS (cerebe: curl -fsSL
+   https://raw.githubusercontent.com/cerebe-ai/cerebe/main/install.sh | sh).
+2. (Optional) Rename the template to my product: run
    `bun run init -- --dry-run --name "<my product>"` to preview, then apply it.
-4. bun install. Confirm the Dark Factory CLI landed at ./node_modules/.bin/df and
-   that the hooks armed (`git config core.hooksPath` returns .husky).
-5. Copy .env.example to .env. Help me get a Cerebe API key and Clerk keys.
-6. bun run dev. Surface http://localhost:5173 and confirm the backend health
+3. bun install, then cerebe init. Confirm `cerebe doctor` reports the
+   post-commit and pre-push hooks as installed.
+4. Copy .env.example to .env. Help me get a Cerebe API key and Clerk keys.
+5. bun run dev. Surface http://localhost:5173 and confirm the backend health
    check at http://localhost:8787/health.
-7. Make a trivial change, commit it, and confirm the Dark Factory post-commit
-   critic produced .git/agent-reviews/<sha>.md with a verdict.
+6. (Optional) Turn on a local critic with `cerebe model add <vendor>` (claude,
+   cursor or codex) for a vendor CLI I'm signed in to. Make a trivial change,
+   commit it, and confirm `cerebe status` shows a verdict for the commit.
 
 Start at step 1. Ask before each shell command.
 ```
@@ -79,18 +80,21 @@ Start at step 1. Ask before each shell command.
 
 - **[Bun](https://bun.sh) ≥ 1.1** — the runtime, package manager, and script
   runner for the whole repo. (`curl -fsSL https://bun.sh/install | bash`)
-- **Git ≥ 2.40** — source control + the Dark Factory commit/push hooks.
+- **Git ≥ 2.40** — source control + the Cerebe Factory commit/push hooks.
 - **macOS or Linux.** Native dev assumes a Unix shell. **On Windows, use
   [WSL2](https://learn.microsoft.com/windows/wsl/install):** install Bun *inside*
   the WSL2 distro and keep the repo on the Linux filesystem (`~/...`, not
   `/mnt/c/...`) — otherwise hot-reload and the git hooks are slow and flaky.
 
-**Needed before your first commit is gated (Step 6) — set up now to avoid a wall:**
+**Needed for the commit/push gate (Steps 1 and 6):**
 
-- **At least one Cursor and/or Codex subscription, authenticated locally.** The
-  Dark Factory local critic uses these flat-rate logins instead of API keys. With
-  **zero** critics authenticated the pre-push gate **fails closed**, so sign in to
-  at least one (`cursor-agent` sign-in / `codex login`) before you push.
+- **The `cerebe` CLI** (Cerebe Factory), installed once per machine:
+  `curl -fsSL https://raw.githubusercontent.com/cerebe-ai/cerebe/main/install.sh | sh`.
+  It is a standalone binary that verifies its release signature on install. It
+  is not an npm package, so nothing in `package.json` pins it.
+- **Optional: a Claude Code, Cursor or Codex subscription, signed in locally**,
+  if you want local critics. They review on your flat-rate login instead of API
+  keys. Local review stays off until you enable a critic (Step 6).
 
 **Needed only when you reach that step — not upfront:**
 
@@ -103,8 +107,8 @@ Start at step 1. Ask before each shell command.
   [`deploy/README.md`](../deploy/README.md).
 
 > **Node.js never runs your app** here — Bun does. You don't even need Node
-> installed for dev. (The Dark Factory CLI is a self-contained bundle Bun runs
-> fine.) See [`notes.md`](notes.md) "Node vs Bun".
+> installed for dev. (The `cerebe` CLI is a standalone binary, so the gate
+> doesn't need Node either.) See [`notes.md`](notes.md) "Node vs Bun".
 
 ## Step 0 — Name your product (~30 sec, one time)
 
@@ -129,27 +133,31 @@ detach from the template's git history. Skip this step entirely to keep `df-cere
 bun install
 ```
 
-This installs every workspace (`backend`, `frontend`, `shared`) **and** the Dark
-Factory gate CLI (`@momentiq/dark-factory-cli@2.5.0`) pinned in the root
-`package.json`. Confirm the gate binary landed:
+This installs every workspace (`backend`, `frontend`, `shared`). Then wire the
+Cerebe Factory gate: install the `cerebe` CLI once per machine (skip this if you
+already have it), and initialize this clone:
 
 ```bash
-./node_modules/.bin/df --help
+curl -fsSL https://raw.githubusercontent.com/cerebe-ai/cerebe/main/install.sh | sh
+cerebe init
+cerebe doctor     # hook:post-commit and hook:pre-push report "installed"
 ```
 
-> **This install is what turns the gate on.** The hooks in `.husky/` are
-> **dormant until now** — git only runs them once the `prepare` script (which
-> runs automatically during `bun install`) installs Husky and points
-> `core.hooksPath` at `.husky/`. So the Dark Factory critic starts reviewing from
-> your **next commit after this install**, not before. (If you ever find commits
-> aren't being reviewed, run `bun run prepare` to re-arm the hooks — see
-> [`notes.md`](notes.md) §14.) If you bootstrapped via the tarball and have no
-> `.git` yet, run `git init -b main` **before** `bun install` so Husky has a repo
-> to arm.
+> **`cerebe init` is what turns the gate on.** The gate config is committed
+> (`cerebe/config.json`, `cerebe.yaml`), but git doesn't clone hooks, so a fresh
+> clone has none until `cerebe init` writes the `post-commit` and `pre-push`
+> hooks. Run it once in every clone; the installer runs it for you when you run
+> it from inside the clone. There is no Husky and no npm package: the CLI lives
+> outside the repo, and `package.json` pins no gate version. If you bootstrapped
+> via the tarball and have no `.git` yet, run `git init -b main` **before**
+> `cerebe init` so it has a repo to wire. Upgrading a clone that used the old
+> Husky hooks? Run `git config --unset core.hooksPath` first: `cerebe init`
+> writes into whatever directory that setting names, so without the unset the
+> hooks land in Husky's leftover directory instead of `.git/hooks`.
 
 > **Commit the lockfile.** Bun writes `bun.lock` (or `bun.lockb`) — commit it.
-> The Dark Factory contract requires a committed lockfile so any CI install
-> resolves the exact same CLI version (see [`notes.md`](notes.md)).
+> Installs stay reproducible, and the Docker builds run
+> `bun install --frozen-lockfile` (see [`notes.md`](notes.md)).
 
 ## Step 2 — Run the dev loop (~seconds)
 
@@ -242,20 +250,30 @@ doppler run -- bun run dev              # run with secrets injected
 In production the same secrets reach Kubernetes via a `Secret` or the Doppler
 operator — see [`deploy/README.md`](../deploy/README.md).
 
-## Step 6 — First commit hits the Dark Factory gate (~1–2 min)
+## Step 6 — First commit hits the Cerebe Factory gate (~1–2 min)
 
-This is the part that's fully wired already. The repo has `.agent-review/config.json`
-(local critic quorum) and the `.husky/` hooks installed.
+The gate config is committed, and `cerebe init` (Step 1) installed the hooks:
 
-### Authenticate at least one critic
+| File | What it holds |
+|---|---|
+| `cerebe/config.json` | The local critic fleet and quorum (empty at first); which finding severities block a push (`blocker`, `high`); the guidance files critics read (`AGENTS.md`, `CLAUDE.md`) and the prompt fragment [`cerebe/prompts/local-critic.md`](../cerebe/prompts/local-critic.md); the docs-only verification route; the advisory TDD classifier |
+| `cerebe.yaml` | Team config: agent autonomy, a deny list of destructive git commands (`git push --force`, `git reset --hard`, `git clean`), and which keys a developer can't override locally |
+| `cerebe/.gitignore` | Keeps the CLI's runtime output (`reviews/`, `runs.ndjson`, …) out of git |
 
-The local critics use your **subscription** logins (flat-rate), not API keys:
+### Turn on a local critic (optional)
 
-- Cursor — sign in via the Cursor agent CLI
-- Codex — `codex login` (ChatGPT subscription)
+Local review starts **off** (no critics). To turn it on, enable a critic for a
+vendor CLI you're signed in to. It reviews on your flat-rate subscription, not
+an API key:
 
-With zero subscriptions the critic reports "0 critics ran" and the pre-push gate
-fails closed (by design). See [`.agent-review/README.md`](../.agent-review/README.md).
+```bash
+cerebe model add claude     # or: cursor, codex
+cerebe model list           # the fleet, its models and the quorum
+```
+
+`cerebe model add` edits `cerebe/config.json`: it adds the critic, sets the
+quorum to the number of enabled critics, and makes a push block when its commit
+has no review. Commit that change when the whole team should run that critic.
 
 ### Make a change and commit
 
@@ -265,18 +283,18 @@ git add -A
 git commit -m "chore: first commit"
 ```
 
-The `post-commit` hook fires `df review` in the **background** (non-blocking).
-After ~30–90s the verdict artifact lands:
+The `post-commit` hook runs `cerebe review` in the **background**
+(non-blocking). With a critic enabled, the verdict lands after a few minutes:
 
 ```bash
-cat .git/agent-reviews/$(git rev-parse HEAD).md
-# or
-./node_modules/.bin/df findings --range HEAD~1..HEAD
+cerebe status                               # verdict + per-critic status for HEAD
+cerebe show                                 # the full review
+cerebe findings --range origin/main..HEAD   # every commit in a range
 ```
 
-A verdict is `APPROVED`, `CHANGES_REQUESTED`, or `BLOCKED`. On
-`CHANGES_REQUESTED`, fix the findings in a **new commit** (never amend — the
-artifact is bound to the original SHA).
+A verdict is `APPROVED` or `CHANGES_REQUESTED`. On `CHANGES_REQUESTED`, fix the
+findings in a **new commit** (never amend — the artifact is bound to the
+original SHA). `CEREBE_SKIP_REVIEW=1 git commit` skips the review of one commit.
 
 ### Push
 
@@ -284,15 +302,19 @@ artifact is bound to the original SHA).
 git push
 ```
 
-The `pre-push` hook runs `df gate-push` against your local artifact; if the HEAD
-commit is APPROVED, the push proceeds. Genuine emergencies only:
-`AGENT_REVIEW_BYPASS="reason" git push` (audited in `_runs.ndjson`).
+The `pre-push` hook runs `cerebe gate-push`, which checks the commit you push
+(HEAD): it blocks while that commit has an unresolved `blocker` or `high`
+finding, or has no review once a critic is enabled. With no critic enabled there
+is no review to check, so it passes (it still enforces any verification routes
+you add to `cerebe/config.json`). Genuine emergencies only:
+`CEREBE_BYPASS="reason" git push` (recorded in `cerebe/runs.ndjson`;
+`cerebe stats` summarizes bypasses).
 
-> **Opt-in next layer:** a hosted critic that posts a **Check Run on your pull
+> **Opt-in next layer:** a hosted critic that posts a **check on your pull
 > requests** (the local gate only protects your own machine). It's not wired by
-> default because it needs a GitHub App or a CI workflow + secrets + a branch
-> ruleset. When you're ready (typically before multi-author merges), see the
-> **[Appendix — Enabling the hosted gate](#appendix--enabling-the-hosted-gate-opt-in)**.
+> default because it needs the Cerebe Factory GitHub App on your repo and a
+> branch ruleset. When you're ready (typically before multi-author merges), see
+> the **[Appendix — Enabling the hosted gate](#appendix--enabling-the-hosted-gate-opt-in)**.
 
 ## Step 7 — Deploy (later, fully optional)
 
@@ -306,8 +328,8 @@ folder is required for, or touched by, the dev loop above. Build images with
 - A **native TypeScript dev loop** — `bun install` → `bun run dev` → dashboard
   on screen, hot-reloading, zero infrastructure
 - **One language end to end**, with backend ↔ frontend types shared in `shared/`
-- A **first commit gated** by the Dark Factory local critic quorum, evidence on
-  disk at `.git/agent-reviews/`
+- A **first commit gated** by the Cerebe Factory hooks, with review artifacts
+  under `cerebe/reviews/` once a local critic is on
 - A **deployment path that exists and works** but stays out of your way until you
   choose it
 
@@ -317,91 +339,51 @@ folder is required for, or touched by, the dev loop above. Build images with
   dependency version pins, LangGraph.js API verification, model selection, Clerk
   -on-Svelte choice, Bun compatibility, Helm-vs-kustomize, the hosted CI gate.
 - [`deploy/README.md`](../deploy/README.md) — the optional deploy graduation path.
-- [`.agent-review/README.md`](../.agent-review/README.md) — the Dark Factory gate
-  config, annotated, and how to strengthen the quorum.
-- Upstream Dark Factory consumer guide:
-  [`momentiq-ai/dark-factory` › CONSUMER-ADOPTION.md](https://github.com/momentiq-ai/dark-factory/blob/main/docs/CONSUMER-ADOPTION.md).
+- [`cerebe/config.json`](../cerebe/config.json) — the gate config (explained in
+  Step 6); `cerebe <command> --help` documents each command.
+- Cerebe Factory docs: <https://cerebe.ai/docs/factory/install>. The CLI and its
+  installer: [`cerebe-ai/cerebe`](https://github.com/cerebe-ai/cerebe).
 
 ## Appendix — Enabling the hosted gate (opt-in)
 
 The local gate (Step 6) only protects *your* machine — it does nothing for merges
 done through the GitHub UI, the merge queue, auto-merge, or a PR opened from
-another machine. To gate **pull requests**, add a hosted critic that posts a
-Check Run, then require that check in a branch ruleset. Pick **one** of two paths
-(running both is a redundant gate):
+another machine. To gate **pull requests**, install the hosted critic, which
+posts a check on every PR, then require that check in a branch ruleset.
 
-### Path A — W3 hosted App (least setup)
+### 1. Install the Cerebe Factory GitHub App
 
-The managed Momentiq critic. Install the **Dark Factory GitHub App** on your repo;
-it posts a **`dark-factory/critic`** Check Run on each PR. No workflow file, no
-API-key secrets to manage. Onboarding + availability: see
-[`CONSUMER-ADOPTION.md` §2](https://github.com/momentiq-ai/dark-factory/blob/main/docs/CONSUMER-ADOPTION.md). Then jump to **Make it binding** below and require the
-`dark-factory/critic` context.
+Install the **[Cerebe Factory GitHub App](https://github.com/apps/cerebe-factory/installations/new)**
+on your repo (walkthrough: <https://cerebe.ai/docs/factory/install>). It reviews
+each PR head on Cerebe's side and posts the **`cerebe/critic`** check. There is
+no workflow file to add and no vendor API keys to manage. The hosted review runs
+the latest `cerebe`, which is why the repo pins no CLI version.
 
-### Path B — self-hosted CI workflow (you control it, BYO keys)
+A green local review is not the PR gate: the hosted fleet, its blocking policy
+and its CLI version are chosen separately from your local setup, so the two can
+disagree on a diff.
 
-Run the critic in your own Actions via the reusable workflow. This is the right
-path if you don't have access to the hosted App.
+> Can't reach the hosted App (an air-gapped network, say)? Run
+> `cerebe critic` from a workflow you write, with your own vendor API keys, and
+> require that job's check instead of `cerebe/critic`. The old reusable
+> `agent-critic.yml` workflow has been deleted, so there is no `uses:` line to
+> copy.
 
-1. **Add `.github/workflows/dark-factory-pr.yml`** calling the `agent-critic`
-   reusable workflow. Pin it to an **exact commit SHA or `@vX.Y.Z` tag** (never a
-   floating `@v0`):
+### 2. Make it binding
 
-   ```yaml
-   name: Dark Factory PR Gate
-   on:
-     pull_request:
-       branches: [main]
-       types: [opened, synchronize, reopened, ready_for_review]
-     merge_group:
-
-   jobs:
-     agent-critic:                       # job id MUST be 'agent-critic' (see note)
-       uses: <your-fork>/dark-factory/.github/workflows/agent-critic.yml@<exact-commit-sha>
-       with:
-         cli-version: '2.5.0'            # match the pin in package.json
-         darkfactory_config_path: '.agent-review/config.json'
-       secrets:
-         CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
-         CODEX_API_KEY:  ${{ secrets.CODEX_API_KEY }}
-         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-         XAI_API_KEY:    ${{ secrets.XAI_API_KEY }}
-   ```
-
-   > **Two template-specific notes.** (a) Reference **your own fork**
-   > (`<your-fork>/dark-factory`, shown above) rather than `momentiq-ai/dark-factory`
-   > unless you have org access — calling another org's reusable workflow requires
-   > its Actions access to be set to `organization`, which you may not control.
-   > (b) **Do not** add the `cycle-doc-validation` job from the upstream example —
-   > that enforces Momentiq's `docs/roadmap/cycles/` convention, which this
-   > template doesn't use. `agent-critic` alone is the gate.
-
-2. **Why API keys here?** CI runners can't use your Cursor/Codex *subscriptions*
-   (those are local-only), so CI critics fall back to per-token API keys. Set the
-   ones for the critics you run (others degrade gracefully via min-complete-quorum):
-
-   ```bash
-   gh secret set CURSOR_API_KEY --repo <your-org>/<your-repo>
-   gh secret set CODEX_API_KEY  --repo <your-org>/<your-repo>
-   ```
-
-### Make it binding (both paths)
-
-Installing/running a critic posts a verdict but **does not block merges** — a
-ruleset does. Create one requiring the check to be green and bot review threads
-resolved:
+Installing the App posts a verdict but **does not block merges** — a ruleset
+does. Wait until `cerebe/critic` has reported on a real PR, then create a
+ruleset that requires it to be green and bot review threads resolved. The
+`cyclone` CLI (installed alongside `cerebe`) prints one:
 
 ```bash
+cyclone admit-pr --print-ruleset main --source <your-org>/<your-repo> \
+  --required-contexts 'cerebe/critic' > main-enforcement.json
 gh api -X POST repos/<your-org>/<your-repo>/rulesets --input main-enforcement.json
 ```
 
-In `main-enforcement.json`, require the **exact** status-check context string:
-
-- **Path A:** `dark-factory/critic`
-- **Path B:** `agent-critic / agent-critic` — the `<job-id> / <callee-job-name>`
-  form, **not** the bare `agent-critic`. Requiring the bare name never matches and
-  blocks every PR forever (this is the #1 wiring mistake).
-
-The full ruleset JSON + the exact required-context rules are in
-[`CONSUMER-ADOPTION.md` §10](https://github.com/momentiq-ai/dark-factory/blob/main/docs/CONSUMER-ADOPTION.md). Both gates consume the **same** `@momentiq/dark-factory-cli`
-and `.agent-review/config.json`, so local and hosted verdicts agree on a diff.
+Require the **exact** context `cerebe/critic`, and optionally pin it to the
+Cerebe Factory App (`"integration_id": 3859191` on that entry) so a check of the
+same name from another app can't satisfy it. The pre-rename
+`dark-factory/critic` is no longer posted, so a ruleset that requires it blocks
+every PR forever.

@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=https://schemas.dark-factory.dev/darkfactory/v1.json
+# Unified cerebe.yaml (cerebe config migrate).
+schemaVersion: 1
+behavior:
+  autonomy: proceed-until-blocked
+tools:
+  deny:
+    - git push --force
+    - git reset --hard
+    - git clean
+policy:
+  locks:
+    - behavior.doctrine
+    - tools.deny
+    - critics.quorum

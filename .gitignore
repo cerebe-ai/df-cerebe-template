@@ -19,16 +19,23 @@ data/
 .doppler/
 
 # --- bun ---
-# NOTE: bun.lockb (or bun.lock) MUST be committed — the Dark Factory contract
-# requires a committed lockfile so CI installs the exact same CLI version.
+# NOTE: bun.lockb (or bun.lock) MUST be committed — installs stay reproducible
+# and the Docker builds run `bun install --frozen-lockfile`.
 # It is intentionally NOT ignored here. (See docs/getting-started.md, Step 1.)
 
-# --- dark factory artifacts ---
-# Per-SHA review artifacts live under .git/agent-reviews/ (inside .git, so already
-# untracked). Nothing to add here, but listed for the reader's mental model.
+# --- cerebe (Cerebe Factory gate) ---
+# Review artifacts and other CLI runtime output live under cerebe/ and are
+# ignored by cerebe/.gitignore. cerebe/config.json and cerebe.yaml are committed.
+# The per-developer overlay files are ignored at the end of this file.
 
 # --- editor / OS ---
 .DS_Store
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Cerebe per-dev overlay (restrict-only; leftover darkfactory.* still ignored)
+cerebe.local.yaml
+cerebe.local.yml
+darkfactory.local.yaml
+darkfactory.local.yml

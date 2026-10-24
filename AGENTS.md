@@ -11,8 +11,10 @@ Bun is the runtime, package manager and script runner: use `bun` and `bunx`,
 not `npm`, `npx` or `node`. Scripts live in the root
 [`package.json`](package.json) (dev loop, deploy) and in each workspace's
 `package.json`, each with a `type-check` script. In a fresh clone, run
-`cerebe init` once: it installs the git hooks that run the critic gate on every
-commit and push.
+`cerebe init` once: it installs the post-commit (review) and pre-push (gate)
+hooks. Review stays off until a critic is enabled, and no check gates pull
+requests until the hosted gate is wired
+([`docs/getting-started.md`](docs/getting-started.md) Step 6 and its appendix).
 
 ## Where things live
 
@@ -32,12 +34,6 @@ commit and push.
 - **Dev never needs Docker or Kubernetes.** `bun install` then `bun run dev`
   is the whole loop. Container and cluster files stay in `deploy/`, out of the
   dev scripts and the dev path. No check enforces this; review holds it.
-- **The gate stays intact.** Don't disable, bypass or weaken the git hooks
-  `cerebe init` installs, `cerebe/config.json` or `cerebe.yaml` to get a commit
-  through. Fix the critic's findings (`cerebe status`, `cerebe show`) in a new
-  commit; never amend. Bypass a push only in a genuine emergency, with
-  `CEREBE_BYPASS="<reason>"`, which is audited. The pre-push hook
-  (`cerebe gate-push`) enforces the gate; review holds the rest.
 - **Lockfile.** A project created from this template commits `bun.lock` after
   its first `bun install`. The template repository itself stays uninstalled
   and commits no lockfile ([`docs/notes.md` §1](docs/notes.md#1-dependency-versions-are-placeholders-verify-before-first-install)).

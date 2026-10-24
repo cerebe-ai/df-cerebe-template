@@ -175,8 +175,9 @@ Factory GitHub App posting a `cerebe/critic` check on each PR — is an addition
 opt-in. The how-to is in
 [`getting-started.md` › Appendix — Enabling the hosted gate](getting-started.md#appendix--enabling-the-hosted-gate-opt-in):
 install the App, then require `cerebe/critic` in a branch ruleset. Per-project
-wiring still ☐ — the local gate is sufficient for solo/early work; add this
-before multi-author merges. Authoritative source: `CONSUMER-ADOPTION.md` §2 and
+wiring still ☐. Until a local critic is enabled (§12) or this hosted gate is
+wired, nothing reviews commits or pull requests; wire it before multi-author
+merges. Authoritative source: `CONSUMER-ADOPTION.md` §2 and
 §10.
 
 ## 12. Turn on (and strengthen) local review  ☐

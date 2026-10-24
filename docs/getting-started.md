@@ -1,12 +1,12 @@
 # Get started — run DF Cerebe locally in minutes, deploy when you choose
 
 > **Native dev first. Infrastructure last, and only if you want it.**
-> TypeScript on both ends, one agent runtime, gated by Cerebe Factory from the
-> first commit. No Kubernetes, no Docker, no cluster to bring up before you see
+> TypeScript on both ends, one agent runtime, with the Cerebe Factory gate wired
+> from the first commit. No Kubernetes, no Docker, no cluster to bring up before you see
 > your dashboard on screen.
 
-This walkthrough takes you from a fresh clone to a running, gated internal
-dashboard. The core loop is **a couple of minutes** — most of it is `bun install`.
+This walkthrough takes you from a fresh clone to a running internal dashboard
+with the gate wired. The core loop is **a couple of minutes** — most of it is `bun install`.
 Deployment (Docker + k8s) is a separate, optional path at the end.
 
 > **Template status:** the backend (Hono + LangGraph.js agent), the streaming
@@ -29,7 +29,7 @@ By the end you have:
 - It **running natively** at `http://localhost:5173` — no containers involved
 - A **first agent turn** streamed from the backend to the chat surface
 - **Auth via Clerk** and **secrets via Doppler** (both optional to start)
-- A **first commit gated** by the Cerebe Factory hooks, reviewed by your local
+- A **first commit through the Cerebe Factory hooks**, reviewed by your local
   critics once you enable one (`cerebe show` prints the per-commit artifact)
 - A **fully-working but isolated deploy path** (Docker + Kubernetes) you can
   reach for later — and never have to think about until then
@@ -329,7 +329,7 @@ folder is required for, or touched by, the dev loop above. Build images with
 - A **native TypeScript dev loop** — `bun install` → `bun run dev` → dashboard
   on screen, hot-reloading, zero infrastructure
 - **One language end to end**, with backend ↔ frontend types shared in `shared/`
-- A **first commit gated** by the Cerebe Factory hooks, with review artifacts
+- A **first commit through the Cerebe Factory hooks**, with review artifacts
   under `cerebe/reviews/` once a local critic is on
 - A **deployment path that exists and works** but stays out of your way until you
   choose it

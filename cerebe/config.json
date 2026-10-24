@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "critics": [],
+  "aggregation": {
+    "quorum": 0,
+    "blockingSeverities": [
+      "blocker",
+      "high"
+    ],
+    "blockOnMissingReview": false
+  },
+  "context": {
+    "guidanceFiles": [
+      "AGENTS.md",
+      "CLAUDE.md"
+    ],
+    "promptFragments": [
+      "cerebe/prompts/local-critic.md"
+    ],
+    "includeChangedFiles": false,
+    "maxChangedFileBytes": 100000,
+    "generatedFilePolicy": {
+      "mode": "compact"
+    }
+  },
+  "selfConsistency": {
+    "enabled": false
+  },
+  "validation": {
+    "verificationRoutes": [
+      {
+        "id": "docs-only",
+        "trigger": [
+          "**/*.md",
+          "docs/**",
+          "**/CHANGELOG*"
+        ],
+        "command": null,
+        "evidencePath": null,
+        "category": "docs",
+        "exclusive": true
+      }
+    ]
+  },
+  "tdd": {
+    "classifier": {
+      "productionGlobs": [],
+      "testGlobs": [],
+      "exclusionGlobs": [
+        "**/*.md",
+        "docs/**",
+        "**/dist/**",
+        "**/node_modules/**",
+        "**/*.lock"
+      ],
+      "justificationTrailer": "Tdd-Justification"
+    }
+  }
+}

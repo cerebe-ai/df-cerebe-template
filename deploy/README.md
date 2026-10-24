@@ -21,7 +21,7 @@ deploy/
     └── base/                  # kustomize base: Deployments, Services, Ingress
 ```
 
-(The optional Dark Factory docker-build evidence shim lives at
+(The optional Cerebe Factory docker-build evidence shim lives at
 [`../scripts/check-dockerfile.sh`](../scripts/check-dockerfile.sh) — see below.)
 
 ## The graduation path (when you're ready to deploy — not before)
@@ -78,16 +78,18 @@ kubectl get pods -n df-cerebe -w
 Set the real `host:` in `k8s/base/ingress.yaml` and adjust the controller-specific
 annotations for your cluster.
 
-## Dark Factory + Dockerfiles (optional)
+## Cerebe Factory + Dockerfiles (optional)
 
-The Dark Factory critics can't run `docker build` (no Docker socket in their
+The Cerebe Factory critics can't run `docker build` (no Docker socket in their
 sandbox), so commits that touch these Dockerfiles get a `requiresHumanJudgment`
 finding by default — harmless, since you review this folder deliberately.
 
-If you want clean critic signal on Dockerfile changes, wire the evidence shim at
-[`../scripts/check-dockerfile.sh`](../scripts/check-dockerfile.sh) into
-`.husky/pre-push`. It's a skeleton for now; see the contract in that file and in
-`CONSUMER-ADOPTION.md §5.5`. **Not required to deploy.**
+If you want clean critic signal on Dockerfile changes, run the evidence shim at
+[`../scripts/check-dockerfile.sh`](../scripts/check-dockerfile.sh) from a
+`pre-push` hook you own, before `cerebe gate-push`. Don't edit the `pre-push`
+hook `cerebe init` writes; `cerebe init` regenerates it. It's a skeleton for now;
+see the contract in that file and in `CONSUMER-ADOPTION.md §5.5`. **Not required
+to deploy.**
 
 ## Why kustomize, not Helm
 

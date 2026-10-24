@@ -36,8 +36,6 @@ published versions, and the set was **peer-verified mutually compatible** via
 | `highlight.js` | frontend | `11.11.1` — code highlighting (`/lib/common` bundle) |
 | `typescript` | all | `6.0.3` |
 | `bun-types` | root (hoisted) | `1.3.14` — added; `tsconfig.base.json` references it |
-| `husky` | root | `9.1.7` |
-| `@momentiq/dark-factory-cli` | root | `2.5.0` (confirmed published; gate-contract exact pin) |
 
 Consequences applied this pass:
 - Root `engines.node` bumped to `^20.19.0 || >=22.12.0` (Vite 8's floor; also
@@ -46,9 +44,11 @@ Consequences applied this pass:
   `zod-to-json-schema` peer was **not** added (declared `optional: true`).
 
 > **Lockfile note (template vs instantiated project):** this TEMPLATE commits NO
-> lockfile (it is never installed — see WORK_LOG_02 D-TEMPLATE). The Dark Factory
-> "commit the lockfile" rule applies to the **project created from** the template:
-> after its first `bun install`, commit `bun.lock` so its CI pins match.
+> lockfile (it is never installed — see WORK_LOG_02 D-TEMPLATE). The "commit the
+> lockfile" rule applies to the **project created from** the template: after its
+> first `bun install`, commit `bun.lock` so installs are reproducible and the
+> Docker builds' `bun install --frozen-lockfile` works. (The gate CLI is no
+> longer an npm package, so the lockfile doesn't pin it.)
 
 ## 2. Skeleton APIs are directional, not verified — now HIGHER risk  ☐
 
@@ -140,9 +140,9 @@ run **the backend** under Node via `@hono/node-server`'s `serve(...)` instead of
 
 ## 7. Node vs Bun  ☑ (documented)
 
-Bun runs the app; Node is not required for dev. The Dark Factory CLI is a
-self-contained Node-targeted bundle that Bun executes fine. Node only re-enters
-the picture as the §6 fallback. No action unless §6 fires.
+Bun runs the app; Node is not required for dev. The gate CLI (`cerebe`) is a
+standalone binary installed outside the repo, so it needs neither. Node only
+re-enters the picture as the §6 fallback. No action unless §6 fires.
 
 ## 8. Deploy: kustomize vs Helm  ☐
 
@@ -168,22 +168,24 @@ Two valid shapes, ☐ pick one:
 Also ☐ confirm SSE streaming passes cleanly through your chosen ingress
 controller (some buffer responses by default and break token streaming).
 
-## 11. Hosted CI gate (W3 critic + Check Run) — NOT wired  ☐
+## 11. Hosted PR gate (Cerebe Factory App + `cerebe/critic`) — NOT wired  ☐
 
-Only the **local** Dark Factory gate is set up. The hosted layer (a Check Run on
-PRs) is an additional opt-in. The **how-to is now written** — see
-[`getting-started.md` › Appendix — Enabling the hosted gate](getting-started.md#appendix--enabling-the-hosted-gate-opt-in).
-It covers both paths (W3 hosted App vs self-hosted CI workflow), the
-template-specific gotchas (reference your own fork's reusable workflow; omit
-`cycle-doc-validation`), and the binding ruleset. Per-project wiring still ☐ —
-the local gate is sufficient for solo/early work; add this before multi-author
-merges. Authoritative source: `CONSUMER-ADOPTION.md` §8–§10.
+Only the **local** Cerebe Factory gate is set up. The hosted layer — the Cerebe
+Factory GitHub App posting a `cerebe/critic` check on each PR — is an additional
+opt-in. The how-to is in
+[`getting-started.md` › Appendix — Enabling the hosted gate](getting-started.md#appendix--enabling-the-hosted-gate-opt-in):
+install the App, then require `cerebe/critic` in a branch ruleset. Per-project
+wiring still ☐. Until a local critic is enabled (§12) or this hosted gate is
+wired, nothing reviews commits or pull requests; wire it before multi-author
+merges. Authoritative source: `CONSUMER-ADOPTION.md` §2 and
+§10.
 
-## 12. Strengthen the local quorum  ☐
+## 12. Turn on (and strengthen) local review  ☐
 
-`.agent-review/config.json` sets `profiles.local.quorum: 1` (one critic suffices)
-so the gate works with a single subscription. ☐ Once both Cursor **and** Codex
-are authenticated, bump to `2` for stronger local signal.
+`cerebe/config.json` ships with **no** local critics (local review off, quorum
+0), the `cerebe install` default. ☐ Enable one with `cerebe model add <vendor>`
+(claude, cursor or codex); it sets the quorum to the number of enabled critics.
+Two critics at quorum 2 give stronger local signal than one.
 
 ## 13. Docker-build evidence shim — skeleton only  ☐
 
@@ -192,16 +194,16 @@ are authenticated, bump to `2` for stronger local signal.
 `requiresHumanJudgment` critic finding until you implement and wire it. ☐ Wire it
 only when you start iterating on the Dockerfiles and want clean signal.
 
-## 14. Husky activation under Bun  ☑
+## 14. Git hooks come from `cerebe init`  ☑
 
-☑ **VERIFIED 2026-06-11.** `bun install` ran the root `prepare: "husky"` script
-(`$ husky` appeared in the install output) and armed the hooks: `git config
-core.hooksPath` returned `.husky/_`. So Bun DOES run the root project's `prepare`
-lifecycle on install — no fallback needed. The gate goes live automatically on
-the first `bun install`, exactly as designed.
+☑ **VERIFIED 2026-10-24 (cerebe v9.12.0).** Husky and the npm gate CLI are gone.
+`cerebe init` writes the `post-commit` and `pre-push` hooks into the directory
+git runs hooks from, reading the committed `cerebe/config.json`. In a fresh
+clone it installed both hooks, left the working tree clean, and `cerebe doctor`
+passed.
 
-- Reminder: hooks are **dormant from clone until the first `bun install`** — this
-  is why the template's own first commit was un-gated (expected).
+- Reminder: git doesn't clone hooks, so every clone is **ungated until someone
+  runs `cerebe init` in it**. `cerebe doctor` reports both hooks.
 
 ## 15. Deep Cerebe integration (agent memory + chat UI)  ☐
 
@@ -242,8 +244,9 @@ Recreate + `DATABASE_PATH`. All workspaces clean + 27 offline smokes. ☐ Phase 
 
 ## Suggested order once you're ready to leave "draft"
 
-1. ☑ §1 versions pinned · ☑ §2 agent implemented + verified · ☑ §6 Bun-compat ·
-   ☑ §14 husky-arm (all done 2026-06-11 via a real throwaway install).
+1. ☑ §1 versions pinned · ☑ §2 agent implemented + verified · ☑ §6 Bun-compat
+   (all done 2026-06-11 via a real throwaway install) · ☑ §14 hooks via
+   `cerebe init` (2026-10-24).
 2. §3 pick the model id default (sonnet-4-6 currently).
 3. §5 Clerk auth — pick the Svelte integration, confirm **3.x** `verifyToken`.
    (The one remaining app stub.)

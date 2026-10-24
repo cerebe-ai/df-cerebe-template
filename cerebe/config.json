@@ -12,7 +12,7 @@
   "context": {
     "guidanceFiles": [
       "AGENTS.md",
-      "CLAUDE.md"
+      "docs/engineering/coding-standards.md"
     ],
     "promptFragments": [
       "cerebe/prompts/local-critic.md"

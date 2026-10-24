@@ -1,70 +1,43 @@
-# AGENTS.md — context for AI agents working in this repo
+# AGENTS.md
 
-This file orients any AI coding agent (Claude Code, Cursor, Codex, etc.) working
-in this repo. Humans: see [`README.md`](README.md) and
-[`docs/getting-started.md`](docs/getting-started.md).
+DF Cerebe is an internal dashboard with streaming AI chat. `backend/` is a
+Bun + Hono + LangGraph.js agent that calls Cerebe, `frontend/` a Vite + Svelte
+SPA, and `shared/` the TypeScript types both import. Quickstart and layout:
+[`README.md`](README.md).
 
-## What this is
+## Commands
 
-This is an **internal dashboard** template built as a deliberately lean scaffold:
+Bun is the runtime, package manager and script runner: use `bun` and `bunx`,
+not `npm`, `npx` or `node`. Scripts live in the root
+[`package.json`](package.json) (dev loop, deploy) and in each workspace's
+`package.json`, each with a `type-check` script. In a fresh clone, run
+`cerebe init` once: it installs the post-commit (review) and pre-push (gate)
+hooks. Review stays off until a critic is enabled, and no check gates pull
+requests until the hosted gate is wired
+([`docs/getting-started.md`](docs/getting-started.md) Step 6 and its appendix).
 
-- **Backend:** Bun + Hono + LangGraph.js (TypeScript agent runtime) — `backend/`
-- **Frontend:** Vite + Svelte SPA (TypeScript) — `frontend/`
-- **Shared types:** `shared/` — imported by both ends; the point of TS-on-both-sides
-- **Gate:** Cerebe Factory — `cerebe/` + `cerebe.yaml`; `cerebe init` wires the git hooks
-- **Deploy:** Docker + Kubernetes — `deploy/`, **opt-in, never used in dev**
+## Where things live
 
-## Non-negotiable principles
-
-1. **Native dev must never require Docker or Kubernetes.** The dev loop is
-   `bun install` → `bun run dev`. Anything container/k8s belongs in `deploy/` and
-   must not leak into the dev path or root dev scripts. If a change would make
-   `bun run dev` depend on Docker, it's wrong.
-2. **One language, shared types.** Cross-cutting shapes (API requests, stream
-   events) live in `shared/` and are imported by both `backend/` and `frontend/`.
-   Don't duplicate a type across the two sides.
-3. **The Cerebe Factory gate is load-bearing.** Don't disable, bypass, or weaken
-   the git hooks `cerebe init` installs, `cerebe/config.json` or `cerebe.yaml` to
-   get a commit through. Address findings in a **new commit** (never amend —
-   artifacts are bound to the original SHA). Bypass only with
-   `CEREBE_BYPASS="reason"` for genuine emergencies, which is audited.
-
-## Current status: WORKING TEMPLATE
-
-- The backend agent (`backend/src/agent/graph.ts`, `index.ts`) and the streaming
-  chat frontend (`frontend/src/App.svelte`) are **implemented and verified** —
-  `bun install`, dev loop, type-checks, frontend build, and a live LangGraph→Cerebe
-  call were all exercised. Versions are **pinned to verified-compatible exacts**.
-- **Auth is implemented** (Clerk, graceful-optional): `requireAuth` +
-  `frontend/src/lib/auth.ts` — official `@clerk/backend` + `@clerk/clerk-js`, off
-  until keys are set (notes §5). Dependencies are declared but the template itself
-  stays **uninstalled** (no `node_modules`/lockfile committed).
-- **Code and examples must be accurate.** When extending the agent or wiring
-  auth, verify the real API against the installed version. Open decisions live in
-  [`docs/notes.md`](docs/notes.md).
-
-## Conventions
-
-- **Bun** is the runtime, package manager, and script runner. Prefer `bun` over
-  `npm`/`node` in commands and docs.
-- **Commit the Bun lockfile** — installs stay reproducible, and the Docker
-  builds run `bun install --frozen-lockfile`.
-- **Secrets:** local dev reads `.env` (gitignored); prod uses Doppler. Only
-  `.env.example` is committed. Never commit a real secret.
-- **LLM work:** the agent's default engine is **Cerebe** (Momentiq's cognitive
-  engine) via its OpenAI-compatible endpoint through `@langchain/openai`. When
-  touching model ids, SDK calls, streaming, or tool use, consult the current
-  Cerebe docs (https://cerebe.ai) rather than memory.
-
-## Where to look
-
-| Need | File |
+| Need | Read |
 |---|---|
-| Run it / overview | [`README.md`](README.md) |
-| Full walkthrough | [`docs/getting-started.md`](docs/getting-started.md) |
-| Open decisions / verify list | [`docs/notes.md`](docs/notes.md) |
-| Gate config (explained in getting-started Step 6) | [`cerebe/config.json`](cerebe/config.json), [`cerebe.yaml`](cerebe.yaml) |
-| Deploy path | [`deploy/README.md`](deploy/README.md) |
+| Coding standards (before writing code) | [`docs/engineering/coding-standards.md`](docs/engineering/coding-standards.md) |
+| Product requirements (PRDs) | [`docs/prds/`](docs/prds/README.md) |
+| Architecture decisions (ADRs) | [`docs/ADR/`](docs/ADR/README.md) |
+| Setup walkthrough, opt-in hosted PR gate | [`docs/getting-started.md`](docs/getting-started.md) |
+| Open decisions, verification log | [`docs/notes.md`](docs/notes.md) |
+| Critic gate configuration | [`cerebe/config.json`](cerebe/config.json), [`cerebe.yaml`](cerebe.yaml) (explained in getting-started Step 6) |
+| Deployment (Docker, Kubernetes) | [`deploy/README.md`](deploy/README.md) |
+| Area rules (nested `AGENTS.md`), skills (`.claude/skills/`) | None yet |
+
+## Rules
+
+- **Dev never needs Docker or Kubernetes.** `bun install` then `bun run dev`
+  is the whole loop. Container and cluster files stay in `deploy/`, out of the
+  dev scripts and the dev path. No check enforces this; review holds it.
+- **Lockfile.** A project created from this template commits `bun.lock` after
+  its first `bun install`. The template repository itself stays uninstalled
+  and commits no lockfile ([`docs/notes.md` §1](docs/notes.md#1-dependency-versions-are-placeholders-verify-before-first-install)).
+  Review holds this.
 
 <!-- cerebe:pack-digest:v1 sha256=4cc3f38a5b2ce6608ec15a4caa7a5d584768fedfdbe72adb00953b244f548093 -->
 # Working with Cerebe's review

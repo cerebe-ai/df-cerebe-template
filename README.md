@@ -57,7 +57,7 @@ df-cerebe-template/
 ├── cerebe/         Cerebe Factory gate config; cerebe init wires the hooks
 ├── cerebe.yaml     Cerebe Factory team config (deny list, locked keys)
 ├── scripts/        init script + optional docker-build evidence shim
-└── docs/           getting-started, notes (open decisions)
+└── docs/           getting-started, notes, coding standards, PRDs, ADRs
 ```
 
 ## The three ideas this template commits to

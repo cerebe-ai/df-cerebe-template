@@ -256,8 +256,8 @@ The gate config is committed, and `cerebe init` (Step 1) installed the hooks:
 
 | File | What it holds |
 |---|---|
-| `cerebe/config.json` | The local critic fleet and quorum (empty at first); which finding severities block a push (`blocker`, `high`); the guidance files critics read (`AGENTS.md`, `CLAUDE.md`) and the prompt fragment [`cerebe/prompts/local-critic.md`](../cerebe/prompts/local-critic.md); the docs-only verification route; the advisory TDD classifier |
-| `cerebe.yaml` | Team config: agent autonomy, a deny list of destructive git commands (`git push --force`, `git reset --hard`, `git clean`), and which keys a developer can't override locally |
+| `cerebe/config.json` | The local critic fleet and quorum (empty at first); which finding severities block a push (`blocker`, `high`); the guidance files critics read (`AGENTS.md`, [`docs/engineering/coding-standards.md`](engineering/coding-standards.md)) and the prompt fragment [`cerebe/prompts/local-critic.md`](../cerebe/prompts/local-critic.md); the docs-only verification route; the advisory TDD classifier |
+| `cerebe.yaml` | Team config: agent autonomy, the deny list of destructive git commands (`tools.deny`), and which keys a developer can't override locally |
 | `cerebe/.gitignore` | Keeps the CLI's runtime output (`reviews/`, `runs.ndjson`, …) out of git |
 
 ### Turn on a local critic (optional)
@@ -293,8 +293,8 @@ cerebe findings --range origin/main..HEAD   # every commit in a range
 ```
 
 A verdict is `APPROVED` or `CHANGES_REQUESTED`. On `CHANGES_REQUESTED`, fix the
-findings in a **new commit** (never amend — the artifact is bound to the
-original SHA). `CEREBE_SKIP_REVIEW=1 git commit` skips the review of one commit.
+findings and commit again; the new commit is reviewed.
+`CEREBE_SKIP_REVIEW=1 git commit` skips the review of one commit.
 
 ### Push
 
@@ -306,9 +306,10 @@ The `pre-push` hook runs `cerebe gate-push`, which checks the commit you push
 (HEAD): it blocks while that commit has an unresolved `blocker` or `high`
 finding, or has no review once a critic is enabled. With no critic enabled there
 is no review to check, so it passes (it still enforces any verification routes
-you add to `cerebe/config.json`). Genuine emergencies only:
-`CEREBE_BYPASS="reason" git push` (recorded in `cerebe/runs.ndjson`;
-`cerebe stats` summarizes bypasses).
+you add to `cerebe/config.json`). `CEREBE_BYPASS="<reason>" git push` skips
+the gate for one push and is recorded in `cerebe/runs.ndjson` (`cerebe stats`
+summarizes bypasses); [`AGENTS.md`](../AGENTS.md) says when a bypass is
+acceptable.
 
 > **Opt-in next layer:** a hosted critic that posts a **check on your pull
 > requests** (the local gate only protects your own machine). It's not wired by

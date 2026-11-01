@@ -48,9 +48,10 @@ Consequences applied this pass:
 `dompurify@3.4.17`. Re-verified with a throwaway `bun install` (lockfile not
 committed), all three workspace `type-check` scripts, and
 `bun audit --audit-level=critical`. Peer check (no guess): langgraph 1.4.1
-accepts `zod@^4.2.0`; vite-plugin-svelte 7.1.2 accepts `vite@^8`. Frontend
-`vite build` still fails on a pre-existing Rolldown PARSE_ERROR (optional TS
-params in `.svelte`) at both 8.0.16 and 8.1.6 — not a regression of this bump.
+accepts `zod@^4.2.0`; vite-plugin-svelte 7.1.2 accepts `vite@^8`. Vite 8's
+Rolldown parse of `id?:` in `<script lang="ts">` broke `vite build` on both
+8.0.16 and 8.1.6; CER-9088 rewrote that parameter as
+`id: string | undefined = undefined` so the production build passes again.
 
 > **Lockfile note (template vs instantiated project):** this TEMPLATE commits NO
 > lockfile (it is never installed — see WORK_LOG_02 D-TEMPLATE). The "commit the
@@ -81,8 +82,11 @@ now **implemented and confirmed working**:
    cross-workspace `@df-cerebe/shared` import as outside rootDir; TS6059).
 2. `graph.ts` — drop the explicit `apiKey` (see above).
 
-All three workspaces type-check clean and the frontend `vite build` passes.
-Remaining API-verification item: **Clerk auth is still unimplemented** — see §5.
+All three workspaces type-check clean. The frontend `vite build` passed on the
+2026-06-11 pin set; under Vite 8 Rolldown it later failed on optional TS
+params in `.svelte` (`id?:`). That syntax is rewritten (CER-9088, 2026-11-01)
+and `vite build` passes on `vite@8.1.6`. Remaining API-verification item:
+**Clerk auth is still unimplemented** — see §5.
 
 ## 3. Model selection  ☐
 

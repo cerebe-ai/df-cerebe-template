@@ -35,7 +35,13 @@ jobs:
           bun-version: 1.4.4
 
       - name: Install
-        run: bun install
+        run: |
+          for attempt in 1 2 3; do
+            bun install && exit 0
+            echo "bun install failed (attempt ${attempt}); retrying"
+            sleep $((attempt * 4))
+          done
+          exit 1
 
       - name: Audit (critical)
         run: bun audit --audit-level=critical
@@ -45,3 +51,6 @@ jobs:
           bun run --cwd shared type-check
           bun run --cwd backend type-check
           bun run --cwd frontend type-check
+
+      - name: Frontend build
+        run: bun run --cwd frontend build

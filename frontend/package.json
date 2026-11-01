@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "type-check": "svelte-check --tsconfig ./tsconfig.json"
   },
-  "//deps-note": "Versions PINNED EXACTLY and verified by a real install on 2026-06-11 (vite 8 ↔ plugin-svelte 7 ↔ svelte 5 ↔ svelte-check 4; @clerk/clerk-js for auth — the official framework-agnostic SDK, no Svelte wrapper needed). Chat UI renders markdown with marked + DOMPurify ({@html}) + highlight.js (docs/design §6.3); all three ship their own TS types. Template stays uninstalled; your `bun install` brings these in.",
+  "//deps-note": "Versions PINNED EXACTLY. Baseline verified by a real install on 2026-06-11 (vite 8 ↔ plugin-svelte 7 ↔ svelte 5 ↔ svelte-check 4; @clerk/clerk-js for auth — the official framework-agnostic SDK, no Svelte wrapper needed). Advisory bumps 2026-11-01: vite 8.1.6, dompurify 3.4.17 — throwaway bun install + svelte-check. Chat UI renders markdown with marked + DOMPurify ({@html}) + highlight.js (docs/design §6.3); all three ship their own TS types. Template stays uninstalled; your `bun install` brings these in.",
   "dependencies": {
     "@clerk/clerk-js": "6.16.0",
     "@df-cerebe/shared": "workspace:*",

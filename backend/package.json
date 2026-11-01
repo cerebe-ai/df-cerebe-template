@@ -9,7 +9,7 @@
     "start": "bun --env-file ../.env src/index.ts",
     "type-check": "tsc -p tsconfig.json --noEmit"
   },
-  "//deps-note": "Versions PINNED EXACTLY and verified by a real install on 2026-06-11. The agent drives Cerebe (Momentiq's cognitive engine) via its OpenAI-compatible endpoint through @langchain/openai — verified live (streamed a real completion). To use raw Anthropic instead, `bun add @langchain/anthropic` and swap graph.ts (notes §4). `zod` is a required peer of @langchain/langgraph 1.x. Template stays uninstalled.",
+  "//deps-note": "Versions PINNED EXACTLY. Baseline verified by a real install on 2026-06-11. Advisory bumps 2026-11-01: hono 4.13.11, zod 4.6.6 — throwaway bun install + type-check; @langchain/langgraph@1.4.1 peer accepts zod ^4.2.0. The agent drives Cerebe (Momentiq's cognitive engine) via its OpenAI-compatible endpoint through @langchain/openai — verified live (streamed a real completion). To use raw Anthropic instead, `bun add @langchain/anthropic` and swap graph.ts (notes §4). `zod` is a required peer of @langchain/langgraph 1.x. Template stays uninstalled.",
   "dependencies": {
     "@cerebe/sdk": "0.4.0",
     "@clerk/backend": "3.6.1",

@@ -18,21 +18,21 @@ published versions, and the set was **peer-verified mutually compatible** via
 
 | Package | Where | Pinned |
 |---|---|---|
-| `hono` | backend | `4.12.25` |
+| `hono` | backend | `4.13.11` |
 | `@langchain/langgraph` | backend | `1.4.1` |
 | `@langchain/core` | backend | `1.1.48` (langgraph + openai peer `^1.1.4x`) |
 | `@langchain/openai` | backend | `1.4.7` — drives Cerebe's OpenAI-compatible endpoint (§4) |
 | `@cerebe/sdk` | backend | `0.4.0` — Cerebe memory client (native API); surface verified, Phase 1 (§15) |
 | `drizzle-orm` | backend | `0.45.2` — typed SQLite (bun:sqlite) transcript store (§15 Phase 7) |
 | `drizzle-kit` | backend (dev) | `0.31.10` — migrations tool (optional; boot uses CREATE TABLE IF NOT EXISTS) |
-| `zod` | backend | `4.4.3` — **new required peer of langgraph 1.x** (was missing) |
+| `zod` | backend | `4.6.6` — required peer of langgraph 1.x (`@langchain/langgraph@1.4.1` peer `^3.25.32 \|\| ^4.2.0`) |
 | `@clerk/backend` | backend | `3.6.1` (engine: node ≥ 20.9) |
 | `svelte` | frontend | `5.56.3` |
-| `vite` | frontend | `8.0.16` (engine: node `^20.19.0 \|\| >=22.12.0` — the strictest in the set) |
+| `vite` | frontend | `8.1.6` (engine: node `^20.19.0 \|\| >=22.12.0` — the strictest in the set) |
 | `@sveltejs/vite-plugin-svelte` | frontend | `7.1.2` (peers: svelte `^5.46.4`, vite `^8`) |
 | `svelte-check` | frontend | `4.6.0` |
 | `marked` | frontend | `18.0.5` — GFM markdown → HTML (chat rendering) |
-| `dompurify` | frontend | `3.4.9` — sanitize before `{@html}` (load-bearing) |
+| `dompurify` | frontend | `3.4.17` — sanitize before `{@html}` (load-bearing) |
 | `highlight.js` | frontend | `11.11.1` — code highlighting (`/lib/common` bundle) |
 | `typescript` | all | `6.0.3` |
 | `bun-types` | root (hoisted) | `1.3.14` — added; `tsconfig.base.json` references it |
@@ -40,8 +40,18 @@ published versions, and the set was **peer-verified mutually compatible** via
 Consequences applied this pass:
 - Root `engines.node` bumped to `^20.19.0 || >=22.12.0` (Vite 8's floor; also
   satisfies Clerk's ≥20.9 and hono's ≥16.9). Advisory — dev runs on Bun.
-- `zod@4.4.3` added to the backend (hard peer of langgraph 1.x). The optional
+- `zod` added to the backend (hard peer of langgraph 1.x). The optional
   `zod-to-json-schema` peer was **not** added (declared `optional: true`).
+
+**Advisory pin bumps 2026-11-01 (CER-9088).** Lowest patched versions that clear
+`bun audit` on those direct deps: `hono@4.13.11`, `zod@4.6.6`, `vite@8.1.6`,
+`dompurify@3.4.17`. Re-verified with a throwaway `bun install` (lockfile not
+committed), all three workspace `type-check` scripts, and
+`bun audit --audit-level=critical`. Peer check (no guess): langgraph 1.4.1
+accepts `zod@^4.2.0`; vite-plugin-svelte 7.1.2 accepts `vite@^8`. Vite 8's
+Rolldown parse of `id?:` in `<script lang="ts">` broke `vite build` on both
+8.0.16 and 8.1.6; CER-9088 rewrote that parameter as
+`id: string | undefined = undefined` so the production build passes again.
 
 > **Lockfile note (template vs instantiated project):** this TEMPLATE commits NO
 > lockfile (it is never installed — see WORK_LOG_02 D-TEMPLATE). The "commit the
@@ -72,8 +82,11 @@ now **implemented and confirmed working**:
    cross-workspace `@df-cerebe/shared` import as outside rootDir; TS6059).
 2. `graph.ts` — drop the explicit `apiKey` (see above).
 
-All three workspaces type-check clean and the frontend `vite build` passes.
-Remaining API-verification item: **Clerk auth is still unimplemented** — see §5.
+All three workspaces type-check clean. The frontend `vite build` passed on the
+2026-06-11 pin set; under Vite 8 Rolldown it later failed on optional TS
+params in `.svelte` (`id?:`). That syntax is rewritten (CER-9088, 2026-11-01)
+and `vite build` passes on `vite@8.1.6`. Remaining API-verification item:
+**Clerk auth is still unimplemented** — see §5.
 
 ## 3. Model selection  ☐
 

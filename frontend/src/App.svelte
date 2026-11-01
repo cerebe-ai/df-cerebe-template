@@ -81,7 +81,11 @@
     await Promise.all([refreshConversations(), loadMessages(sessionId)]);
   });
 
-  function resetTool(tools: ChatMsg["tools"], name: string, id?: string) {
+  function resetTool(
+    tools: ChatMsg["tools"],
+    name: string,
+    id: string | undefined = undefined,
+  ) {
     let matched = false;
     return tools.map((t) => {
       if (matched) return t;

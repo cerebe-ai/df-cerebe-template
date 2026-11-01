@@ -1,0 +1,56 @@
+# Least-privilege CI. The hosted PR gate remains the Cerebe Factory App
+# (`cerebe/critic`). This template does not commit bun.lock (docs/notes.md §1),
+# so install is not --frozen-lockfile; instantiated projects should commit the
+# lockfile and switch that step to frozen.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: type-check and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.4
+
+      - name: Install
+        run: |
+          for attempt in 1 2 3; do
+            bun install && exit 0
+            echo "bun install failed (attempt ${attempt}); retrying"
+            sleep $((attempt * 4))
+          done
+          exit 1
+
+      - name: Audit (critical)
+        run: bun audit --audit-level=critical
+
+      - name: Type-check
+        run: |
+          bun run --cwd shared type-check
+          bun run --cwd backend type-check
+          bun run --cwd frontend type-check
+
+      - name: Frontend build
+        run: bun run --cwd frontend build

@@ -9,9 +9,6 @@ import type { Clerk } from "@clerk/clerk-js";
 
 const pk = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 
-/** True when a Clerk publishable key is configured. */
-export const authEnabled = Boolean(pk);
-
 let clerk: Clerk | undefined;
 
 /**

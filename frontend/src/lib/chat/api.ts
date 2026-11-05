@@ -41,12 +41,3 @@ export async function deleteConversation(id: string): Promise<void> {
   });
   if (!res.ok && res.status !== 404) throw new Error(`HTTP ${res.status}`);
 }
-
-export async function renameConversation(id: string, title: string): Promise<void> {
-  const res = await fetch(`${API}/api/conversations/${id}`, {
-    method: "PATCH",
-    headers: await authHeaders({ "content-type": "application/json" }),
-    body: JSON.stringify({ title }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-}

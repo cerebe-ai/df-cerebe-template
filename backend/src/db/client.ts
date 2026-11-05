@@ -62,4 +62,3 @@ await client.batch([
 ]);
 
 export const db = drizzle(client, { schema });
-export { schema };
